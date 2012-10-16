@@ -20,27 +20,8 @@
         <members>*</members>
         <name>CustomApplication</name>
     </types>
-    <types>
-        <members>AccountContactRole.Role</members>
-        <members>Asset.ProductFamily</members>
-        <members>Asset.Status</members>
-        <members>CampaignMember.LeadSource</members>
-        <members>CampaignMember.Salutation</members>
-        <members>CampaignMember.Status</members>
-        <members>CaseContactRole.Role</members>
-        <members>Contract.Status</members>
-        <members>ContractContactRole.Role</members>
-        <members>Event.Subject</members>
-        <members>Event.Type</members>
-        <members>Idea.Categories</members>
-        <members>Idea.Status</members>
-        <members>PartnerRole.ReverseRole</members>
-        <members>Product2.Family</members>
-        <members>Solution.Status</members>
-        <members>Task.Priority</members>
-        <members>Task.Status</members>
-        <members>Task.Subject</members>
-        <members>Task.Type</members>
+    <types>        
+        <members>*</members>
         <name>CustomField</name>
     </types>
     <types>
@@ -61,6 +42,7 @@
         <members>Household__c</members>
         <members>Households_Settings__c</members>
         <members>OppPayment__c</members>
+        <members>Opportunity_Rollup_Error__c</members>
         <members>Payment_Field_Mapping_Settings__c</members>
         <members>Recurring_Donation__c</members>
         <members>Recurring_Donations_Error_Queue__c</members>
@@ -101,30 +83,12 @@
         <members>*</members>
         <name>Letterhead</name>
     </types>
-    <types>
-        <members>Activity.AllActivities</members>
-        <members>Activity.MyActivities</members>
-        <members>Activity.TodaysTasks</members>
-        <members>Activity.UpcomingEvents</members>
-        <members>Asset.AllAssets</members>
-        <members>Contract.AllActivatedContracts</members>
-        <members>Contract.AllContracts</members>
-        <members>Contract.AllDraftContracts</members>
-        <members>Contract.AllInApprovalContracts</members>
-        <members>Contract.MyActivatedContracts</members>
-        <members>Contract.MyDraftContracts</members>
-        <members>Contract.MyInApprovalContracts</members>
-        <members>Product2.AllProducts</members>
-        <members>Solution.AllReviewedSolutions</members>
-        <members>Solution.AllUnreviewedSolutions</members>
-        <members>User.ActiveUsers</members>
-        <members>User.AdminUsers</members>
-        <members>User.AllUsers</members>
+    <types>       
+        <members>*</members>
         <name>ListView</name>
     </types>
     <types>
-        <members>Foundation</members>
-        <members>Salesforce_Foundation</members>
+        <members>*</members>       
         <name>RemoteSiteSetting</name>
     </types>
     <types>
