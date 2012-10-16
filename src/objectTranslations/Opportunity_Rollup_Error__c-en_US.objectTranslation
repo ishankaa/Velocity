@@ -4,10 +4,6 @@
         <plural>false</plural>
         <value>Opportunity Rollup Errors</value>
     </caseValues>
-    <caseValues>
-        <plural>true</plural>
-        <value>Opportunity Rollup Errors</value>
-    </caseValues>
     <fields>
         <help><!-- Datetime of the error --></help>
         <label><!-- Error Datetime --></label>

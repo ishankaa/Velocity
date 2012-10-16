@@ -245,6 +245,7 @@ if(ISPICKVAL(Secondary_Address_Type__c,&quot;Home&quot;),
 Account.LastDonationDate__c,
 null
 )</formula>
+        <inlineHelpText>WARNING - This field may not accurately reflect the donation history. Please use the Last Gift Date field instead.</inlineHelpText>
         <label>Last Transaction Date</label>
         <required>false</required>
         <type>Date</type>
@@ -307,6 +308,7 @@ Account.LifetimeDonationHistory_Amount__c,
 null
 )</formula>
         <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+        <inlineHelpText>WARNING- This field may not accurately reflect donation histories. Please use the Total Amount field on the Contact record instead.</inlineHelpText>
         <label>Lifetime Transaction Total</label>
         <precision>18</precision>
         <required>false</required>
@@ -1010,4 +1012,25 @@ LEN( WorkPhone__c )&gt;0
         <errorDisplayField>PreferredPhone__c</errorDisplayField>
         <errorMessage>You must select a Preferred Phone</errorMessage>
     </validationRules>
+    <webLinks>
+        <fullName>Copy_Address_to_Household</fullName>
+        <availability>online</availability>
+        <displayType>button</displayType>
+        <height>600</height>
+        <linkType>page</linkType>
+        <masterLabel>Copy Address to Household</masterLabel>
+        <openType>sidebar</openType>
+        <page>BTNContactAddressCopy</page>
+        <protected>false</protected>
+    </webLinks>
+    <webLinks>
+        <fullName>Household</fullName>
+        <availability>online</availability>
+        <displayType>button</displayType>
+        <linkType>url</linkType>
+        <masterLabel>Household</masterLabel>
+        <openType>replace</openType>
+        <protected>false</protected>
+        <url>{!IF(ISNULL(Contact.HouseholdId__c),URLFOR($Action.Household__c.New,null,[cid=Contact.Id,retURL=URLFOR($Action.Contact.View, Contact.Id)]),URLFOR($Action.Household__c.Edit,Contact.HouseholdId__c,[cid=Contact.Id,hhid=Contact.HouseholdId__c,retURL=URLFOR($Action.Contact.View, Contact.Id)]))}</url>
+    </webLinks>
 </CustomObject>

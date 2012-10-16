@@ -46,9 +46,7 @@ public without sharing class OpportunityRollup_Utilities {
     public static integer BATCH_SIZE = 200;
     private static boolean recordTypesOnOpps;
     private static boolean useSoftCredits;
-    private static id IndividualAccountId;
-    private static boolean accountIDCheck = false;
-    
+    private static set<id> IndividualAccountIds;
     
     /*** FY ***/
     private static integer fiscal_year;
@@ -90,7 +88,8 @@ public without sharing class OpportunityRollup_Utilities {
     	                                                               'LastCloseDate__c', 'NumberOfClosedOpps__c', 
     	                                                               'TotalMembershipOppAmount__c', 'OppsClosedLastYear__c',
     	                                                               'OppsClosedLastNDays__c', 'OppsClosed2YearsAgo__c',
-    	                                                               'LastMembershipLevel__c'};
+    	                                                               'LastMembershipLevel__c', 'Best_Gift_Year__c',
+    	                                                               'Best_Gift_Year_Total__c'};
     
     private final static set<string> OpportunityContactRoleFields = new set<string>{'ContactId', 'Contact.household__c',
                                                         'Contact.TotalOppAmount__c', 'Contact.OppAmountThisYear__c',
@@ -98,7 +97,7 @@ public without sharing class OpportunityRollup_Utilities {
                                                         'Contact.NumberOfClosedOpps__c', 'Contact.TotalMembershipOppAmount__c',
                                                         'Contact.OppAmountLastYear__c', 'Contact.OppAmount2YearsAgo__c', 
                                                         'Contact.LastOppAmount__c', 'Contact.household__r.TotalOppAmount__c',
-                                                        'Contact.LastMembershipLevel__c',   
+                                                        'Contact.LastMembershipLevel__c', 'Contact.Best_Gift_Year__c', 'Contact.Best_Gift_Year_Total__c',    
                                                         'Contact.household__r.OppAmountThisYear__c', 'Contact.household__r.OppAmountLastNDays__c', 
                                                         'Contact.household__r.TotalMembershipOppAmount__c', 'Contact.household__r.LastCloseDate__c',   
                                                         'Contact.household__r.NumberOfClosedOpps__c', 'Contact.household__r.OppsClosedThisYear__c', 
@@ -106,7 +105,9 @@ public without sharing class OpportunityRollup_Utilities {
                                                         'Contact.household__r.OppsClosed2YearsAgo__c','Contact.household__r.OppAmountLastYear__c', 
                                                         'Contact.household__r.OppAmount2YearsAgo__c', 'Contact.MembershipEndDate__c', 
                                                         'Contact.household__r.MembershipEndDate__c', 'Contact.MembershipJoinDate__c', 
-                                                        'Contact.household__r.MembershipJoinDate__c', 'Contact.Household__r.LastMembershipLevel__c'}; 
+                                                        'Contact.household__r.MembershipJoinDate__c', 'Contact.Household__r.LastMembershipLevel__c',
+                                                        'Contact.household__r.Best_Gift_Year__c', 'Contact.household__r.Best_Gift_Year_Total__c'
+                                                        }; 
     	
     private final static set<string> ContactFields = new set<string>{'TotalOppAmount__c', 'OppAmountThisYear__c',
                                                                 'OppAmountLastNDays__c', 'TotalMembershipOppAmount__c', 
@@ -115,7 +116,7 @@ public without sharing class OpportunityRollup_Utilities {
                                                                 'OppAmount2YearsAgo__c', 'MembershipJoinDate__c',
                                                                 'LastMembershipLevel__c', 'Soft_Credit_This_Year__c',
                                                                 'Soft_Credit_Two_Years_Ago__c', 'Soft_Credit_Total__c',
-                                                                'Soft_Credit_Last_Year__c'};
+                                                                'Soft_Credit_Last_Year__c', 'Best_Gift_Year__c', 'Best_Gift_Year_Total__c'};
     
     private final static set<string> HouseholdFields = new set<string>{'TotalOppAmount__c', 'OppAmountThisYear__c', 
                                                                 'OppAmountLastNDays__c', 'LastCloseDate__c', 
@@ -124,7 +125,8 @@ public without sharing class OpportunityRollup_Utilities {
                                                                 'OppsClosedLastNDays__c', 'OppsClosed2YearsAgo__c',
                                                                 'OppAmountLastYear__c', 'OppAmount2YearsAgo__c',
                                                                 'MembershipEndDate__c', 'MembershipJoinDate__c',
-                                                                'LastMembershipLevel__c'};
+                                                                'LastMembershipLevel__c', 'Best_Gift_Year__c',
+                                                                'Best_Gift_Year_Total__c'};
 
     /*** Settings Methods ***/ 
     //configures and sets up static vars for OppRollups
@@ -221,12 +223,13 @@ public without sharing class OpportunityRollup_Utilities {
     	return useSoftCredits;
     }  
     
-    public static id getIndividualAccountId(){
-    	if (!accountIdCheck){
-    		IndividualAccountId = Constants.getIndividualAccountId();
-            accountIdCheck = true;    	           	
+    public static set<id> getIndividualAccountIds(){
+    	if (IndividualAccountIds == null){    	   
+    		IndividualAccountIds = new set<id>();                      	
+            if (Constants.getIndividualAccountId() != null)
+                IndividualAccountIds.add(Constants.getIndividualAccountId());    	   
     	}
-    	return IndividualAccountId;    	
+    	return IndividualAccountIds;    	
     }    
     
     /****************************************/
@@ -337,7 +340,7 @@ public without sharing class OpportunityRollup_Utilities {
     	//if the account id is not null and its not the individual/bucket account AND
     	//its the membership rectype or the rectype isn't exclused AND
         //the opp type isn't excluded
-    	if (o.AccountId != null && o.AccountId != getIndividualAccountId() && 
+    	if (o.AccountId != null && !getIndividualAccountIds().contains(o.AccountId) && 
     	(mbrRecordTypes.contains((id)o.get('recordTypeId')) || !recordTypesToExcludeAccts.contains((id)o.get('recordTypeId'))) && 
     	!oppTypesToExcludeAccts.contains(o.type)){
             needsRollup = true;    	           
@@ -428,9 +431,15 @@ public without sharing class OpportunityRollup_Utilities {
             AccountRollupQuery += 'FROM Opportunity ';
             AccountRollupQuery += 'WHERE isWon=true '; 
             AccountRollupQuery += 'AND Amount != null '; 
-            if (getIndividualAccountId() != '' && getIndividualAccountId() != null){
-                AccountRollupQuery += 'AND AccountID != \'' + getIndividualAccountId() + '\' ';
-            }        
+            if (!getIndividualAccountIds().isEmpty()){
+                AccountRollupQuery += 'AND AccountID NOT IN (';
+                for (id i : getIndividualAccountIds()){                	
+                	AccountRollupQuery += '\'' + i + '\',';
+                }
+                //drop the trailing comma
+                AccountRollupQuery = AccountRollupQuery.substring(0, AccountRollupQuery.length() - 1);
+                AccountRollupQuery += ') ';
+            }         
             if(areRecordTypesOnOpps()){
                 AccountRollupQuery += 'AND RecordTypeId NOT IN :rectypeset ';
             }
@@ -442,8 +451,8 @@ public without sharing class OpportunityRollup_Utilities {
             else{
                 AccountRollupQuery += 'GROUP BY ROLLUP (AccountId, Calendar_Year(CloseDate)) ';                
             }
-            AccountRollupQuery += ' HAVING AccountId != null';
-    	}    	
+            AccountRollupQuery += ' HAVING AccountId != null ';
+    	}
     	return AccountRollupQuery;
     }
     
@@ -454,9 +463,15 @@ public without sharing class OpportunityRollup_Utilities {
             AccountNDayQuery += 'FROM Opportunity  '; 
             AccountNDayQuery += 'WHERE isWon=true  '; 
             AccountNDayQuery += 'AND Amount != null '; 
-            if (getIndividualAccountId() != '' && getIndividualAccountId() != null){
-                AccountNDayQuery += 'AND AccountID != \'' + getIndividualAccountId() + '\' ';
-            }
+            if (!getIndividualAccountIds().isEmpty()){
+                AccountRollupQuery += 'AND AccountID NOT IN (';
+                for (id i : getIndividualAccountIds()){                 
+                    AccountRollupQuery += '\'' + i + '\',';
+                }
+                //drop the trailing comma
+                AccountRollupQuery = AccountRollupQuery.substring(0, AccountRollupQuery.length() - 1);
+                AccountRollupQuery += ') ';
+            }   
             if(areRecordTypesOnOpps()){ 
                 AccountNDayQuery += 'AND RecordTypeId NOT IN :rectypeset '; 
             }
@@ -464,7 +479,7 @@ public without sharing class OpportunityRollup_Utilities {
             AccountNDayQuery += 'AND AccountId IN :aset '; 
             AccountNDayQuery += 'AND closeDate >= LAST_N_DAYS:' + hh_settings.Rollup_N_Day_Value__c.intValue() + ' '; 
             AccountNDayQuery += 'GROUP BY AccountId '; 
-            AccountNDayQuery += 'HAVING AccountId != null';
+            AccountNDayQuery += 'HAVING AccountId != null ';
     	}    	
         return AccountNDayQuery;
     }
@@ -479,9 +494,15 @@ public without sharing class OpportunityRollup_Utilities {
             AccountMembershipQuery += 'FROM Opportunity ';
             AccountMembershipQuery += 'WHERE isWon=true  ';
             AccountMembershipQuery += 'AND Amount != null  ';         
-            if (getIndividualAccountId() != '' && getIndividualAccountId() != null){
-                AccountMembershipQuery += 'AND accountID != \'' + getIndividualAccountId() + '\' ';
-            }            
+            if (!getIndividualAccountIds().isEmpty()){
+                AccountRollupQuery += 'AND AccountID NOT IN (';
+                for (id i : getIndividualAccountIds()){                 
+                    AccountRollupQuery += '\'' + i + '\',';
+                }
+                //drop the trailing comma
+                AccountRollupQuery = AccountRollupQuery.substring(0, AccountRollupQuery.length()-1);
+                AccountRollupQuery += ') ';
+            }             
             if(areRecordTypesOnOpps()){
                 AccountMembershipQuery += 'AND RecordTypeId IN :memberset ';
             }
@@ -491,7 +512,7 @@ public without sharing class OpportunityRollup_Utilities {
                 AccountMembershipQuery += 'GROUP BY ROLLUP (AccountId, Fiscal_Year(closeDate)) ';
             else
                 AccountMembershipQuery += 'GROUP BY ROLLUP (AccountId, Calendar_Year(closeDate)) ';
-            AccountMembershipQuery += 'HAVING AccountId != null';
+            AccountMembershipQuery += 'HAVING AccountId != null ';
     	}
     	return AccountMembershipQuery;
     }
@@ -659,7 +680,8 @@ public without sharing class OpportunityRollup_Utilities {
                 SoftCreditQuery = 'SELECT ContactId, Fiscal_Year(Opportunity.CloseDate) CalendarYr, ';
             else
                 SoftCreditQuery = 'SELECT ContactId, Calendar_Year(Opportunity.CloseDate) CalendarYr, ';            
-            SoftCreditQuery += 'SUM(Opportunity.Amount) TotalOppAmount ';
+            SoftCreditQuery += 'SUM(Opportunity.Amount) TotalOppAmount, ';
+            SoftCreditQuery += 'MAX(Opportunity.CombinedRollupFieldset__c) RollupFieldset ';
             SoftCreditQuery += 'FROM OpportunityContactRole ';
             SoftCreditQuery += 'WHERE Opportunity.isWon=true '; 
             SoftCreditQuery += 'AND Opportunity.Amount != null ';   

@@ -132,7 +132,8 @@ public with sharing class TEST_OpportunityRollup {
             id hhid = UpdatedCon.household__r.id;
             Household__c[] hhs = database.query('SELECT id, TotalOppAmount__c, LastCloseDate__c, '+
             'TotalMembershipOppAmount__c, OppAmountLastNDays__c, OppAmountThisYear__c, LastMembershipLevel__c, ' +
-            'OppAmountLastYear__c, OppAmount2YearsAgo__c, MembershipJoinDate__c, MembershipEndDate__c '+
+            'OppAmountLastYear__c, OppAmount2YearsAgo__c, MembershipJoinDate__c, MembershipEndDate__c, '+
+            'Best_Gift_Year__c, Best_Gift_Year_Total__c ' +
             (OpportunityRollup_Utilities.isMultiCurrency() ? ', CurrencyIsoCode ' : '')+      
             'FROM household__c WHERE id = :hhid LIMIT 1');
         
@@ -211,7 +212,8 @@ public with sharing class TEST_OpportunityRollup {
             Household__c[] hhs = database.query('SELECT id, TotalOppAmount__c, LastCloseDate__c, '+
             'TotalMembershipOppAmount__c, OppAmountLastNDays__c, OppAmountThisYear__c, '+
             'OppAmountLastYear__c, OppAmount2YearsAgo__c, MembershipJoinDate__c, MembershipEndDate__c, '+
-            'LastMembershipLevel__c ' +
+            'LastMembershipLevel__c, ' +
+            'Best_Gift_Year__c, Best_Gift_Year_Total__c ' +
             (OpportunityRollup_Utilities.isMultiCurrency() ? ', CurrencyIsoCode ' : '')+      
             'FROM household__c WHERE id = :hhid LIMIT 1');
             
@@ -291,7 +293,8 @@ public with sharing class TEST_OpportunityRollup {
             id hhid = UpdatedCon.household__r.id;
             household__c[] hhs = database.query('SELECT id, TotalOppAmount__c, LastCloseDate__c, '+
             'TotalMembershipOppAmount__c, OppAmountLastNDays__c, OppAmountThisYear__c, '+
-            'OppAmountLastYear__c, OppAmount2YearsAgo__c, MembershipEndDate__c, MembershipJoinDate__c, LastMembershipLevel__c '+
+            'OppAmountLastYear__c, OppAmount2YearsAgo__c, MembershipEndDate__c, MembershipJoinDate__c, LastMembershipLevel__c, '+
+            'Best_Gift_Year__c, Best_Gift_Year_Total__c ' + 
             (OpportunityRollup_Utilities.isMultiCurrency() ? ', CurrencyIsoCode ' : '')+      
             'FROM household__c WHERE id = :hhid LIMIT 1');
             
@@ -424,7 +427,7 @@ public with sharing class TEST_OpportunityRollup {
                                     LastCloseDate__c, NumberOfClosedOpps__c, 
                                     TotalMembershipOppAmount__c, OppsClosedLastYear__c,
                                     OppsClosedLastNDays__c, OppsClosed2YearsAgo__c,
-                                    LastMembershipLevel__c
+                                    LastMembershipLevel__c, Best_Gift_Year__c, Best_Gift_Year_Total__c
                                     from Account where id =: testacct.id];
                                     
             System.AssertEquals ( 33333 , updatedAcct.TotalOppAmount__c );       
@@ -483,7 +486,8 @@ public with sharing class TEST_OpportunityRollup {
                                     TotalMembershipOppAmount__c, OppsClosedLastYear__c,
                                     OppsClosedLastNDays__c, OppsClosed2YearsAgo__c,
                                     LastMembershipLevel__c, LastMembershipDate__c,
-                                    LastMembershipAmount__c, LastMembershipOrigin__c
+                                    LastMembershipAmount__c, LastMembershipOrigin__c,
+                                    Best_Gift_Year__c, Best_Gift_Year_Total__c
                                     from Account where id =: testacct.id];
                                 
                       
@@ -972,7 +976,7 @@ public with sharing class TEST_OpportunityRollup {
         testUserRollup3.Name = 'TestRollup3';
         testURFS.add(TestUserRollup3);
         
-        insert testURFS;  
+        insert testURFS; 
         
         Contact c = new Contact(LastName = 'Lastname', BirthDate = system.today().addDays(-4));
         insert c;
@@ -1227,4 +1231,51 @@ public with sharing class TEST_OpportunityRollup {
         OpportunityRollups.rollupHouseholdsFuture(HHid);        
     	Test.stopTest();
     }    
+    
+    static testMethod void testOpportunityUtilityErrorHandling(){
+    	String giftRecordTypeNameForTests = RecordTypes.getRecordTypeNameForGiftsTests('Opportunity');
+
+        Households_Settings__c householdSettingsForTests = Households.getHouseholdsSettingsForTests(
+            new Households_Settings__c (
+            Household_Rules__c = Households.ALL_PROCESSOR,
+            Always_Rollup_to_Primary_Contact__c = false,
+            Enable_Opp_Rollup_Triggers__c = false,
+            Excluded_Account_Opp_Rectypes__c = null,
+            Excluded_Account_Opp_Types__c = null,
+            Excluded_Contact_Opp_Rectypes__c = null,
+            Excluded_Contact_Opp_Types__c = null,
+            Membership_Record_Types__c = null,
+            Enable_Soft_Credit_Rollups__c = true,
+            Soft_Credit_Roles__c = 'TestOCR',     
+            Advanced_Household_Naming__c = false               
+        ));
+                
+        Contacts_and_Orgs_Settings__c contactSettingsForTests = Constants.getContactsSettingsForTests(
+            new Contacts_and_Orgs_Settings__c (
+            Account_Processor__c = Constants.ONE_TO_ONE_PROCESSOR,
+            Enable_Opportunity_Contact_Role_Trigger__c = true,
+            Opportunity_Contact_Role_Default_role__c = 'Donor'
+        ));
+                
+        // create & insert contact(s)
+        Contact[] TestCons = UnitTestData.CreateMultipleTestContacts(10) ;
+        insert TestCons;
+    
+        //create new opp with a missing required field
+        Opportunity[] newOpps = UnitTestData.OppsForContactList ( TestCons, null, UnitTestData.getClosedWonStage(), null, 1000 , giftRecordTypeNameForTests ,null);
+            	
+    	Database.Saveresult[] sr = Database.insert(newOpps, false);
+    	system.assert(sr != null);
+    	system.assert(TestCons[0].id != null);
+    	Opportunity_Rollup_Error__c ore = OpportunityRollup_Utilities.createError(sr[0], 'Opportunity', TestCons[0].id);
+    	system.assert(ore != null);
+    	system.assertEquals('Required Field Missing',ore.Error_Type__c);
+    	system.assert(ore.Name.startsWith(TestCons[0].id));
+    	system.assertEquals('Opportunity',ore.Error_Object_Type__c);
+    }
+    
+    static testMethod void testFYUtility(){    	
+    	integer fy = OpportunityRollup_Utilities.getCurrentFY();
+        system.assert(fy != null);    	
+    }
 }

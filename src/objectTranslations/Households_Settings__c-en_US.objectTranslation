@@ -112,6 +112,11 @@ DISABLES the OpportunityRollup.trigger (Opportunity, after insert, after update,
         <name>Household_Contact_Roles_On__c</name>
     </fields>
     <fields>
+        <help><!-- Contact recordtypes excluded from Household creation --></help>
+        <label><!-- Household Creation Excluded Recordtypes --></label>
+        <name>Household_Creation_Excluded_Recordtypes__c</name>
+    </fields>
+    <fields>
         <help><!-- The report ID of the Household Mailing List Report used for Household-deduplicated Campaign mailing lists.  Report should be of Campaigns with Contacts, where Member Status does not contain &apos;Duplicate&apos; --></help>
         <label><!-- Household Mailing List ID --></label>
         <name>Household_Mailing_List_ID__c</name>
@@ -120,6 +125,11 @@ DISABLES the OpportunityRollup.trigger (Opportunity, after insert, after update,
         <help><!-- Select the Contact Role for Household Members --></help>
         <label><!-- Household Member Contact Role --></label>
         <name>Household_Member_Contact_Role__c</name>
+    </fields>
+    <fields>
+        <help><!-- Contact recordtypes excluded from Household Opportunity Contact Role creation --></help>
+        <label><!-- Household OCR Excluded Recordtypes --></label>
+        <name>Household_OCR_Excluded_Recordtypes__c</name>
     </fields>
     <fields>
         <help><!-- Select which Contacts get Households: All, only those related to an Individual Account, or none. --></help>

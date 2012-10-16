@@ -34,7 +34,8 @@
 */
 public with sharing class householdsSettings {  
     
-    public Households_Settings__c pageSettings = getSettings();
+    public Households_Settings__c pageSettings;
+    public Households_Settings__c getSettings(){return pageSettings;}
     public boolean runningBatch {get; set;}
     public string activeTab {get; set;}
     public boolean editRollupSettingsTab{get; set;}
@@ -43,7 +44,7 @@ public with sharing class householdsSettings {
     public List<Opportunity_Rollup_Error__c> errorList{get; set;}
      
      /********Vars for PKG Update Info *************/
-    public string getMyVersion(){return string.valueof(/*Package.Version.Request*/'');}
+    public string getMyVersion(){return string.valueof(1/*Package.Version.Request*/);}
     public string getMaxVersion(){return pageSettings.Max_Package_Version__c;}
     public string getUpdateURL(){return pageSettings.Package_Update_URL__c;}
     public string getLastUpdate(){      
@@ -72,6 +73,9 @@ public with sharing class householdsSettings {
         contactRTs = new List<string>();
         contactTypes = new List<string>();
         scContactRoles = new List<string>();
+        hhContactRTExclusions = new List<string>();
+        OCRContactRTExclusions = new List<string>();        
+        
         if (runningbatch == null)
             runningbatch = false;
         activeTab = 'HouseholdSettingsTab'; 
@@ -88,12 +92,8 @@ public with sharing class householdsSettings {
         else{
         	hasErrors = false;
         }             
-    }
-    
-    public Households_Settings__c getSettings() {
-        pageSettings = Households.getHouseholdsSettings();
-        return pageSettings;
-    }
+    }    
+       
     //we can't do a DML in a getter, so I call it from the action of the page
     public PageReference getSettingsFirstTime() {
     	   
@@ -144,6 +144,15 @@ public with sharing class householdsSettings {
         	scContactRoles = pageSettings.Soft_Credit_Roles__c.split(';',0);
         }        
         
+        if (pageSettings.Household_OCR_Excluded_Recordtypes__c != null){
+            OCRContactRTExclusions = pageSettings.Household_OCR_Excluded_Recordtypes__c.split(';',0);	
+        }        
+          
+        if (pageSettings.Household_Creation_Excluded_Recordtypes__c != null){
+            hhContactRTExclusions = pageSettings.Household_Creation_Excluded_Recordtypes__c.split(';',0);        	
+        }
+        
+        
         if (pr != null){
         	pr.setRedirect(true);
         }
@@ -157,6 +166,8 @@ public with sharing class householdsSettings {
     public List<String> contactRTs {get;set;}
     public List<String> contactTypes {get;set;}
     public List<String> scContactRoles {get;set;}
+    public List<String> OCRContactRTExclusions {get; set;}
+    public List<String> hhContactRTExclusions {get; set;}
     
     public List<SelectOption> getcontactRoles() {
     
@@ -174,16 +185,23 @@ public with sharing class householdsSettings {
     List<SelectOption> householdrules;
     List<SelectOption> RTypes;
     List<SelectOption> Types;
+    List<SelectOption> conRTypes;
     List<SelectOption> oppStages = new List<SelectOption>();
    
     public PageReference scheduleRollups(){
     	PageReference pr = null;
     	
         if(pageSettings.Enable_Opp_Rollup_Triggers__c){
-            Integer scheduledJobLimit = (integer)pageSettings.Schedule_Job_Limit__c;
-            boolean alreadyScheduled = false;            
+        	
+        	Integer scheduledJobLimit;
+        	if (pageSettings.Schedule_Job_Limit__c != null)
+                scheduledJobLimit = (integer)pageSettings.Schedule_Job_Limit__c;
+            else
+                scheduledJobLimit = 25;
             
-            List<cronTrigger> scheduledRollups = [SELECT Id FROM cronTrigger limit :scheduledJobLimit];
+            boolean alreadyScheduled = false;            
+            List<cronTrigger> scheduledRollups = new List<cronTrigger>();
+            scheduledRollups = [SELECT Id FROM cronTrigger limit :scheduledJobLimit];
             
             if(pageSettings.Opp_Rollup_Scheduled_Job_Id__c != null){
                 for(cronTrigger thisScheduledJob : scheduledRollups){ 
@@ -245,7 +263,16 @@ public with sharing class householdsSettings {
         return oppStages;
     }
     
-     public List<SelectOption> getRTypes() {
+    public List<SelectOption> getConRTypes(){
+    	if (ConRTypes == null){
+    		RTypes = new List<SelectOption>();
+    		RTypes.add(new SelectOption(' ', '- none -'));
+    		RTypes.addAll(RecordTypes.getStringRecordTypesForSelectList('Contact'));    		
+    	}    	
+    	return RTypes;
+    }    
+        
+    public List<SelectOption> getRTypes() {
         if(RTypes == null){
             RTypes = new List<SelectOption>();
             RTypes.add(new SelectOption(' ','- none -'));
@@ -304,13 +331,30 @@ public with sharing class householdsSettings {
             s += ';' + tp;
         }
         if (s != '') pageSettings.Excluded_Account_Opp_Types__c = s.substring(1);
-        
         s = '';
+
         for (String tp : contactTypes) {
             if (tp!=null&&tp!='')
             s += ';' + tp;
         }
         if (s != '') pageSettings.Excluded_Contact_Opp_Types__c = s.substring(1);
+        s = '';
+
+        for (String tp : OCRContactRTExclusions){
+        	if (tp!=null&&tp!='')
+        	s+= ';' + tp;
+        	
+        }
+        if (s!='')pageSettings.Household_OCR_Excluded_Recordtypes__c = s.substring(1);
+        s = '';
+
+        for (String tp : hhContactRTExclusions){
+            if (tp!=null&&tp!='')
+            s+= ';' + tp;            
+        }
+        if (s!='')pageSettings.Household_Creation_Excluded_Recordtypes__c = s.substring(1);        
+
+        
         update pageSettings;
         showMsg('Households Settings updated',ApexPages.Severity.INFO);
         editHouseholdSettingsTab = false;
@@ -331,13 +375,14 @@ public with sharing class householdsSettings {
     }
     
     public void checkForUpdates(){
-      //  NPSPPkgVersionCheck npvc = new NPSPPkgVersionCheck('npo02');        
-       // npvc.NPSPCheckVersion(true);
+        NPSPPkgVersionCheck npvc = new NPSPPkgVersionCheck('npo02');        
+        npvc.NPSPCheckVersion(true);
     }
-    public pageReference cancel(){
+    public pageReference cancel(){    	
         editHouseholdSettingsTab = false;
         editRollupSettingsTab = false;
-        return null;
+        pageReference pr = ApexPages.currentPage().setRedirect(true);        
+        return pr;
     }
     public pageReference editHouseholdSettings(){
         editHouseholdSettingsTab = true;
@@ -364,7 +409,7 @@ public with sharing class householdsSettings {
         //pass the controller into the extension
         householdsSettings controller = new householdsSettings(); 
         controller.getSettingsFirstTime();
-        system.assertNotEquals(null,controller.getSettings());
+        system.assertNotEquals(null,controller.pageSettings);
         
         List<SelectOption> householdrules =  controller.gethouseholdrules(); 
         system.assertEquals(3,householdrules.size());
@@ -388,8 +433,18 @@ public with sharing class householdsSettings {
         controller.pageSettings.Enable_Opp_Rollup_Triggers__c = true;
         controller.editHouseholdSettings();
         controller.editRollupSettings();
+        controller.updateSettings();  
         controller.cancel();
-        controller.deleteErrors();        
-       // controller.updateSettings();                
+        controller.deleteErrors();
+        controller.activateHouseholdNaming();
+        system.assertEquals(true, controller.runningBatch);        
+        
+        //test package update calls
+        String myver = controller.getMyVersion();
+        system.assertEquals(String.valueOf(1/*Package.Version.Request*/), myver);
+        String maxver = controller.getMaxVersion();
+        String uUrl = controller.getUpdateURL();
+        String lastUpdate = controller.getLastUpdate();
+        String pkupdates = controller.getpkgupdatestatus();              
     }    
 }

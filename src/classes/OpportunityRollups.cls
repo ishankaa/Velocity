@@ -181,7 +181,8 @@ global virtual without sharing class OpportunityRollups{
                 LastMembershipDate__c = null, LastMembershipAmount__c = 0,                
                 LastMembershipLevel__c = null, LastMembershipOrigin__c = null,                
                 MembershipJoinDate__c = null, MembershipEndDate__c = null,
-                LastOppAmount__c = null                  
+                LastOppAmount__c = null,
+                Best_Gift_Year__c = null, Best_Gift_Year_Total__c = 0                  
             ));            
             // map currency across if multicurrency
             if(OpportunityRollup_Utilities.isMultiCurrency())
@@ -200,8 +201,18 @@ global virtual without sharing class OpportunityRollups{
         
         for (sobject r : objectList){            
             id aid = (id)(r.get('AccountId'));
-            if (aid != null)
+            if (aid != null){
                 updateRollupFromResult((sobject)(accountsToUpdate.get(aid)), r, opptyCurrencies);
+                
+                //calculate best gift year
+                decimal yrAmt = (decimal)r.get('TotalOppAmount');
+                integer yr = (integer)r.get('CalendarYr');
+                Account a = accountsToUpdate.get(aid);
+                if ((yrAmt > a.Best_Gift_Year_Total__c || a.Best_Gift_Year_Total__c==null ) && yr !=null){
+                    a.Best_Gift_Year_Total__c = yrAmt;
+                    a.Best_Gift_Year__c = string.valueOf(yr);
+                }          
+            }   
         }       
         
         objectList.clear();
@@ -243,7 +254,9 @@ global virtual without sharing class OpportunityRollups{
                     a1.OppAmountLastNDays__c == a2.OppAmountLastNDays__c &&
                     a1.TotalMembershipOppAmount__c == a2.TotalMembershipOppAmount__c &&
                     a1.LastCloseDate__c == a2.LastCloseDate__c && 
-                    a1.LastMembershipLevel__c == a2.LastMembershipLevel__c
+                    a1.LastMembershipLevel__c == a2.LastMembershipLevel__c &&
+                    a1.Best_Gift_Year__c == a2.Best_Gift_Year__c &&
+                    a1.Best_Gift_Year_Total__c == a2.Best_Gift_Year_Total__c
                     )
             accountsToUpdate.remove(aid);
         }         
@@ -280,7 +293,8 @@ global virtual without sharing class OpportunityRollups{
                 LastMembershipDate__c = null, LastMembershipAmount__c = 0,                
                 LastMembershipLevel__c = null, LastMembershipOrigin__c = null,                
                 MembershipJoinDate__c = null, MembershipEndDate__c = null,                
-                LastOppAmount__c = null
+                LastOppAmount__c = null, 
+                Best_Gift_Year__c = null, Best_Gift_Year_Total__c = 0
             ));
             // map currency across if multicurrency
             if(OpportunityRollup_Utilities.isMultiCurrency())
@@ -349,7 +363,9 @@ global virtual without sharing class OpportunityRollups{
                     c1.LastCloseDate__c == c2.LastCloseDate__c &&
                     c1.MembershipEndDate__c == c2.MembershipEndDate__c &&
                     c1.MembershipJoinDate__c == c2.MembershipJoinDate__c &&
-                    c1.LastMembershipLevel__c == c2.LastMembershipLevel__c
+                    c1.LastMembershipLevel__c == c2.LastMembershipLevel__c &&
+                    c1.Best_Gift_Year__c == c2.Best_Gift_Year__c &&
+                    c1.Best_Gift_Year_Total__c == c2.Best_Gift_Year_Total__c
                     )
                 contactsToUpdate.remove(cid);
         }
@@ -387,7 +403,8 @@ global virtual without sharing class OpportunityRollups{
                 LastMembershipDate__c = null, LastMembershipAmount__c = 0,                
                 LastMembershipLevel__c = null, LastMembershipOrigin__c = null,                
                 MembershipJoinDate__c = null, MembershipEndDate__c = null,                
-                LastOppAmount__c = null
+                LastOppAmount__c = null,
+                Best_Gift_Year__c = null, Best_Gift_Year_Total__c = 0
             ));
             
             // map currency across if multicurrency
@@ -458,7 +475,9 @@ global virtual without sharing class OpportunityRollups{
                     h1.LastCloseDate__c == h2.LastCloseDate__c &&
                     h1.MembershipEndDate__c == h2.MembershipEndDate__c &&
                     h1.MembershipJoinDate__c == h2.MembershipJoinDate__c &&
-                    h1.LastMembershipLevel__c == h2.LastMembershipLevel__c
+                    h1.LastMembershipLevel__c == h2.LastMembershipLevel__c &&
+                    h1.Best_Gift_Year__c == h2.Best_Gift_Year__c &&
+                    h1.Best_Gift_Year_Total__c == h2.Best_Gift_Year_Total__c
                     )
                 householdsToUpdate.remove(hhid);
         }
@@ -485,8 +504,8 @@ global virtual without sharing class OpportunityRollups{
         
         for (id cid : cmap.keySet()) {
             contactsToUpdate.put(cid, new Contact(id = cid,                 
-                Soft_Credit_This_Year__c = null, Soft_Credit_Last_Year__c = null,                
-                Soft_Credit_Two_Years_Ago__c = null, Soft_Credit_Total__c = null
+                Soft_Credit_This_Year__c = 0, Soft_Credit_Last_Year__c = 0,                
+                Soft_Credit_Two_Years_Ago__c = 0, Soft_Credit_Total__c = 0
             ));
             // map currency across if multicurrency
             if(OpportunityRollup_Utilities.isMultiCurrency())

@@ -66,20 +66,13 @@ public class CTRL_OpportunityRollup {
             // run the rollup for the specified object
             OpportunityRollups rg = new OpportunityRollups();
             if (objectId.startsWith('001')){
-                Account a = [select id from Account where id = :oid];
-                rg.RollupAccounts(new map<id, Account>(new list<Account>{a}));
+                OpportunityRollups.RollupAccountsFuture(new set<id>{oid});
             }                
-            else if (objectId.startsWith('003')){
-                Contact c = [select TotalOppAmount__c, OppAmountLastYear__c, 
-                    OppAmount2YearsAgo__c, OppAmountLastNDays__c,
-                    OppAmountThisYear__c, TotalMembershipOppAmount__c,
-                    LastCloseDate__c, MembershipEndDate__c,
-                    MembershipJoinDate__c, LastMembershipLevel__c from Contact where id = :oid];
-                rg.RollupContacts(new map<id, Contact>(new list<Contact>{c}));                
+            else if (objectId.startsWith('003')){                
+                OpportunityRollups.RollupContactsFuture(new set<id>{oid});                
             }                
-            else{ 
-                Household__c h = [select id from Household__c where id = :oid];
-                rg.RollupHouseholds(new map<id, Household__c>(new list<Household__c>{h}));                
+            else{
+                OpportunityRollups.RollupHouseholdsFuture(new set<id>{oid});                
             }    
             ref = new PageReference('/' + oid);
             ref.setRedirect(true);

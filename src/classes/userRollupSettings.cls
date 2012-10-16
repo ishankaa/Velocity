@@ -47,7 +47,7 @@ public with sharing class userRollupSettings{
     public list<SelectOption> targetobjects = new list<SelectOption>{
         new SelectOption('Account', 'Account'),
         new SelectOption('Contact', 'Contact'),
-        new SelectOption('npo02__Household__c', 'npo02__Household__c')    
+        new SelectOption('Household__c', 'Household__c')    
     }; 
     
     public list<UDR> udrList;
@@ -138,11 +138,11 @@ public with sharing class userRollupSettings{
         	   string fieldname = (currentURFSMap.get(s).Target_Field__c).toLowerCase();
         	   //we need to strip out the namespace
         	   if (fieldname.contains('npo02')){
-        	   	   fieldname = fieldname.replace('npo02__', '');
+        	   	   fieldname = fieldname.replace('', '');
         	   	
         	   }
         	   else if (fieldname.contains('npe01')){
-        	   	   fieldname = fieldname.replace('npe01__', '');
+        	   	   fieldname = fieldname.replace('', '');
         	   }
         	   currentTargetFieldSet.add(fieldname);
         	}
@@ -165,7 +165,9 @@ public with sharing class userRollupSettings{
                 'oppamount2yearsago__c', 'total_household_gifts__c', 'oppamountlastndayshh__c',
                 'oppamountlastyearhh__c', 'oppamountthisyearhh__c', 'totalmembershipoppamount__c',
                 'numberofclosedopps__c', 'systemhouseholdprocessor__c', 'naming_exclusions__c',
-                'best_gift_year__c', 'best_gift_year_total__c', 'household_naming_order__c'
+                'best_gift_year__c', 'best_gift_year_total__c', 'household_naming_order__c',
+                'soft_credit_last_year__c', 'soft_credit_this_year__c', 'soft_credit_total__c',
+                'soft_credit_two_years_ago__c'
                 };
         }
         else if(activeUDR.TargetObject == 'Account'){
@@ -184,7 +186,7 @@ public with sharing class userRollupSettings{
                 'best_gift_year__c', 'best_gift_year_total__c'
            };
         }
-        else if(activeUDR.TargetObject == 'Household__c' || activeUDR.TargetObject == 'npo02__Household__c'){
+        else if(activeUDR.TargetObject == 'Household__c' || activeUDR.TargetObject == 'Household__c'){
             targetTokenMap = Schema.SobjectType.Household__c.fields.getMap().clone();
             knownfields = new set<string>{
                 'addressee__c', 'always_anonymous__c', 'averagemount__c', 'firstclosedate__c',   
@@ -218,7 +220,7 @@ public with sharing class userRollupSettings{
         
         if (targettokenMap.size() > 0){        
             for (string s : targetTokenMap.keyset()){            
-                if (s.contains('__c') && (!s.startswith('npe01__'))){
+                if (s.contains('__c') && (!s.startswith(''))){
                     Schema.DescribeFieldResult F = targetTokenMap.get(s).getDescribe();                  
                     targetfields.add(new SelectOption(f.getName(), s));    
                 }
@@ -236,7 +238,7 @@ public with sharing class userRollupSettings{
     public list<SelectOption> getSourceFields(){
         
         set<string> knownOpptyFields = new set<string>{'Amount', 'CloseDate', 'ExpectedRevenue', 
-        	'Probability', 'TotalOpportunityQuantity', 'npe01__membership_start_date__c', 'npe01__membership_end_date__c'};
+        	'Probability', 'TotalOpportunityQuantity', 'membership_start_date__c', 'membership_end_date__c'};
         
         if (sourcefields.isEmpty()){                       
             map<String, Schema.SObjectField> oppFieldTokenList = Schema.SObjectType.Opportunity.fields.getMap(); 
@@ -267,7 +269,7 @@ public with sharing class userRollupSettings{
            
                 if((knownfield == 'Amount') || (knownfield == 'ExpectedRevenue'))
                     mapFieldTypes.put(knownfield, Schema.Displaytype.Currency);         
-                else if((knownfield == 'CloseDate')||(knownfield == 'npe01__membership_start_date__c') || (knownfield == 'npe01__membership_end_date__c'))                  
+                else if((knownfield == 'CloseDate')||(knownfield == 'membership_start_date__c') || (knownfield == 'membership_end_date__c'))                  
                     mapFieldTypes.put(knownfield, Schema.Displaytype.Date);
                 else
                     mapFieldTypes.put(knownfield, Schema.Displaytype.Double);   
@@ -321,7 +323,7 @@ public with sharing class userRollupSettings{
                 targetField = Schema.sObjectType.Account.fields.getMap().get(urfs.Target_Field__c); 
                 if (targetField == null) isValid = false;               
             }
-            else if (urfs.Object_Name__c == 'Household__c' || urfs.Object_Name__c == 'npo02__Household__c'){
+            else if (urfs.Object_Name__c == 'Household__c' || urfs.Object_Name__c == 'Household__c'){
                 targetField = Schema.sObjectType.Household__c.fields.getMap().get(urfs.Target_Field__c); 
                 if (targetField == null) isValid = false;
             }
@@ -476,7 +478,7 @@ public with sharing class userRollupSettings{
         list<SelectOption> targetFieldList = controller.getTargetFields();
                
         //change target object to test other options        
-        controller.activeUDR.TargetObject = 'npo02__Household__c';
+        controller.activeUDR.TargetObject = 'Household__c';
         targetFieldList = controller.getTargetFields();
         
         controller.activeUDR.TargetObject = 'Contact';
@@ -535,7 +537,7 @@ public with sharing class userRollupSettings{
         Name = 'Household Test Rollup',
         Target_Field__c = 'lastoppamount__c',
         Source_Field__c = 'Amount',
-        Object_Name__c = 'npo02__Household__c',
+        Object_Name__c = 'Household__c',
         Field_Action__c = 'MAX'         
         );
         

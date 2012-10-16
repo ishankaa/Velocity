@@ -20,7 +20,7 @@
         <members>*</members>
         <name>CustomApplication</name>
     </types>
-    <types>        
+    <types>
         <members>*</members>
         <name>CustomField</name>
     </types>
@@ -28,20 +28,20 @@
         <members>*</members>
         <name>CustomLabels</name>
     </types>
-    <types>        
+    <types>
         <members>Account</members>
-        <members>Campaign</members>
-        <members>Contact</members>
-        <members>Lead</members>
-        <members>Opportunity</members>
         <members>Affiliation__c</members>
         <members>Affiliations_Settings__c</members>
+        <members>Campaign</members>
+        <members>Contact</members>
         <members>Contacts_And_Orgs_Settings__c</members>
         <members>Custom_Field_Mapping__c</members>
         <members>Custom_Installment_Settings__c</members>
         <members>Household__c</members>
         <members>Households_Settings__c</members>
+        <members>Lead</members>
         <members>OppPayment__c</members>
+        <members>Opportunity</members>
         <members>Opportunity_Rollup_Error__c</members>
         <members>Payment_Field_Mapping_Settings__c</members>
         <members>Recurring_Donation__c</members>
@@ -80,15 +80,19 @@
         <name>HomePageComponent</name>
     </types>
     <types>
+        <members>DE Default</members>
+        <name>HomePageLayout</name>
+    </types>
+    <types>
         <members>*</members>
         <name>Letterhead</name>
     </types>
-    <types>       
+    <types>
         <members>*</members>
         <name>ListView</name>
     </types>
     <types>
-        <members>*</members>       
+        <members>*</members>
         <name>RemoteSiteSetting</name>
     </types>
     <types>
