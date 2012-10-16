@@ -52,7 +52,8 @@ public with sharing class RecurringDonations_AddDonationsBTN {
                                                            'organization__c', 'contact__c', 'installment_amount__c',
                                                            'installments__c', 'amount__c', 'total__c', 'installment_period__c',
                                                            'date_established__c', 'donor_name__c', 'schedule_type__c', 
-                                                           'recurring_donation_campaign__c', 'total_paid_installments__c'};
+                                                           'recurring_donation_campaign__c', 'total_paid_installments__c',
+                                                           'ownerid'};
             
             String qString = 'select id';
             for (string s : existingFields){
@@ -74,10 +75,12 @@ public with sharing class RecurringDonations_AddDonationsBTN {
         qString += ' from Recurring_Donation__c ';
         qString += ' where id = \'' + RecurringDonation.id + '\'';
         RecurringDonation = (Recurring_Donation__c)database.query(qString);
-        RecurringDonations.evaluateRecurringDonationsForNewOppInsert(new list<Recurring_Donation__c>{RecurringDonation});
+    
+        if (RecurringDonation.Open_Ended_Status__c == system.label.RecurringDonationOpenStatus)
+            RecurringDonations.evaluateRecurringDonationsForNewOppInsert(new list<Recurring_Donation__c>{RecurringDonation});
         
         PageReference pageRef = new PageReference(returnurl);
-        pageRef.setRedirect(true);
+        pageRef.setRedirect(true);        
         return pageRef;
     }
     

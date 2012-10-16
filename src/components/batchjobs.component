@@ -1,4 +1,4 @@
-<apex:component controller="CTRL_BatchJobsProgress" selfClosing="true">
+<apex:component controller="RecurringDonations_JobProgressCTRL" selfClosing="true">
 <!-- 
 * Written by Jason Venable, http://www.tehnrd.com/batch-apex-status-bar/  
 * This program is released under the GNU General Public License. http://www.gnu.org/licenses/

@@ -134,4 +134,8 @@
         <label><!-- New_Recurring_Donation_Pledge_Account --></label>
         <name>New_Recurring_Donation_Pledge_Account</name>
     </webLinks>
+    <webLinks>
+        <label><!-- Refresh_Opportunities --></label>
+        <name>Refresh_Opportunities</name>
+    </webLinks>
 </CustomObjectTranslation>

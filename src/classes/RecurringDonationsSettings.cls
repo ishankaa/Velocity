@@ -176,7 +176,7 @@ public with sharing class RecurringDonationsSettings {
     public string OppField{get;set;}
     
     /***  Vars for PKG Update Info ***/
-    public string getMyVersion(){return string.valueof(/*Package.Version.Request*/'');}
+    public string getMyVersion(){return string.valueof(1/*Package.Version.Request*/);}
     public string getMaxVersion(){return rds.Max_Package_Version__c;}
     public string getUpdateURL(){return rds.Package_Update_URL__c;}
     public string getLastUpdate(){      
@@ -223,8 +223,8 @@ public with sharing class RecurringDonationsSettings {
             }
         
             else{
-             //   RecurringDonationsPkgVersionCheck npvc = new RecurringDonationsPkgVersionCheck('npe03');        
-           //     npvc.RecurringDonationsCheckVersion(false);
+                RecurringDonationsPkgVersionCheck npvc = new RecurringDonationsPkgVersionCheck('npe03');        
+                npvc.RecurringDonationsCheckVersion(false);
             }
         }
         
@@ -392,8 +392,8 @@ public with sharing class RecurringDonationsSettings {
     }    
     
     public void checkForUpdates(){
-    /*    RecurringDonationsPkgVersionCheck npvc = new RecurringDonationsPkgVersionCheck('npe03');        
-        npvc.RecurringDonationsCheckVersion(true);*/
+        RecurringDonationsPkgVersionCheck npvc = new RecurringDonationsPkgVersionCheck('npe03');        
+        npvc.RecurringDonationsCheckVersion(true);
     }
     
     public pageReference clearErrorQueue(){

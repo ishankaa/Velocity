@@ -42,6 +42,60 @@ global with sharing class RecurringDonations {
     public static map<id, Recurring_Donation__c> recurringDonationMap;
     public static map<string, Custom_Field_Mapping__c> customFieldMappingSettings = new map<string, Custom_Field_Mapping__c>();
     public static boolean RecordTypeValid;
+    public static set<string> existingFields = new set<string>{'open_ended_status__c', 'next_payment_date__c', 'name',
+                                                           'organization__c', 'contact__c', 'installment_amount__c',
+                                                           'installments__c', 'amount__c', 'total__c', 'installment_period__c',
+                                                           'date_established__c', 'donor_name__c', 'schedule_type__c', 
+                                                           'recurring_donation_campaign__c', 'total_paid_installments__c',
+                                                           'ownerid', 'paid_amount__c', 'last_payment_date__c'};
+    
+    
+        /*** Multicurrency ***/
+    public static boolean multiCurrency;
+    //exchangerate store
+    static map<string, decimal> exchangeRates = new map<string,decimal>();
+    //corporate currency
+    static string currCorporate; 
+    
+       /*** Multicurrency Support Methods ***/
+    
+    //returns a boolean if we are in a multi-currency org or not.
+    //on first execution sets up static variables etc
+    public static boolean isMultiCurrency(){                    
+        if (multiCurrency==null){
+            //are we in a multi-currency org?
+            if (UserInfo.isMultiCurrencyOrganization()){
+                multiCurrency = true;
+                
+	            String queryExchangeRates = 'select IsoCode,ConversionRate,IsCorporate from CurrencyType';
+	            SObjectType soCurrencyType = Schema.getGlobalDescribe().get('CurrencyType');
+	            
+                map<string,SObjectField> ctFields = soCurrencyType.getDescribe().fields.getMap();
+                SObjectField ctIsoCode = ctFields.get('IsoCode');
+                SObjectField ctConversionRate = ctFields.get('ConversionRate');
+                SObjectField ctCorporate = ctFields.get('IsCorporate');
+
+                //iterate over all the currencies in the org (inc. inactive ones as they may have been used previously)
+                //this allows us to put them in a map and use the ISO code as key and also set the corporate
+                for(sObject ct: Database.query(queryExchangeRates)){
+                    exchangeRates.put((string)ct.get(ctIsoCode),(decimal)ct.get(ctConversionRate));
+                    if((boolean)ct.get(ctCorporate))currCorporate=(string)ct.get(ctIsoCode);
+                }
+            }
+            else
+                multiCurrency = false; 
+        }        
+        return multiCurrency;
+    }
+
+    //do a conversion from amount in corporate currency to the currency specified by the ISO code
+    public static decimal convertFromCorporate(String ISO,Decimal amt){
+        if(currCorporate == ISO || currCorporate == null) // no need to convert
+            return amt;
+        else //return value to 2DP
+            return (amt * exchangeRates.get(ISO)).setScale(2) ;
+    }
+    
     
     /*** Constructors ***/ 
            
@@ -59,25 +113,12 @@ global with sharing class RecurringDonations {
             }                  
         }           
         
-        //Get the open label for opps
-        string openLabel = system.label.RecurringDonationOpenStatus;
-        recurringDonationMap = new map<id, Recurring_Donation__c>([select id, Paid_Amount__c, Next_Payment_Date__c, 
-                                                                                    Contact__c, Organization__c, Amount__c, 
-                                                                                    Date_Established__c, Recurring_Donation_Campaign__c,
-                                                                                     Installment_Period__c, Installments__c,
-                                                                                     Last_Payment_Date__c, Open_Ended_Status__c,
-                                                                                     Schedule_Type__c, Total_Paid_Installments__c,
-                                                                                     Donor_Name__c, OwnerId
-                                                                                  from Recurring_Donation__c 
-                                                                                  where Open_Ended_Status__c = :openLabel
-                                                                                  and id IN :RDids]);
         //recurring donations that need to be updated      
-        if (!recurringDonationMap.keySet().isEmpty()){
-        	if (recurringDonationMap.keySet().size() == 1 || system.isBatch() || RecurringDonations_ProcessControl.batchButton)
-        	   updateRecurringDonationOnOppChange(rdIds);
-                //evaluateExistingOpportunities(rdIds, false);
+        if (!rdIds.isEmpty()){
+        	if (rdIds.size() == 1 || system.isBatch() || RecurringDonations_ProcessControl.batchButton)
+        	   updateRecurringDonationOnOppChange(rdIds);        
             else
-                updateRecurringDonationOnOppChangeFuture(rdIds);                                        
+               updateRecurringDonationOnOppChangeFuture(rdIds);                                        
         }        
     }
     
@@ -142,31 +183,52 @@ global with sharing class RecurringDonations {
     public static void updateRecurringDonationOnOppChangeFuture(set<id> RDids){updateRecurringDonationOnOppChange(RDids);} 
     public static void updateRecurringDonationOnOppChange(set<id> RDids){
      
-        //Multicurrency Support
-        SObjectField OppCurrencyField = Schema.sObjectType.Opportunity.fields.getMap().get('CurrencyIsoCode');
         //Use NPSP OCR Support?
         Sobjectfield ConIDForRole = Schema.sObjectType.Opportunity.fields.getMap().get('npe01__Contact_Id_for_Role__c');
         
         //set of RDs to be updated         
         map<id, Recurring_Donation__c> updateMap = new map<id, Recurring_Donation__c>();
         
+        SObjectField RDCurrencyField;
+        
         //Get our settings
         Recurring_Donations_Settings__c rds = getRecurringDonationsSettings();     
          
         //Get the open label for opps
         string openLabel = system.label.RecurringDonationOpenStatus;
-        
-        //get all possible rd records that may need updating, exclude ones not in an open state  
-        map<id, Recurring_Donation__c> rdMap = new map<id, Recurring_Donation__c>([select id, Paid_Amount__c, Next_Payment_Date__c, 
-                                                                                    Contact__c, Organization__c, Amount__c, 
-                                                                                    Date_Established__c, Recurring_Donation_Campaign__c,
-                                                                                     Installment_Period__c, Installments__c,
-                                                                                     Last_Payment_Date__c, Open_Ended_Status__c,
-                                                                                     Schedule_Type__c, Total_Paid_Installments__c,
-                                                                                     Donor_Name__c, OwnerId
-                                                                                  from Recurring_Donation__c 
-                                                                                  where Open_Ended_Status__c = :openLabel
-                                                                                  and id IN :RDids]);
+   
+        map<id, Recurring_Donation__c> rdMap = new map<id, Recurring_Donation__c>();
+              
+        String queryRCD = 'select id';
+        for (string s : existingFields){
+            queryRCD += ', ' + s;               
+        }
+       
+        //add any custom mapping to make sure we have the required fields
+        map<string, Custom_Field_Mapping__c> cfmMap = new map<string, Custom_Field_Mapping__c>();
+        cfmMap = Custom_Field_Mapping__c.getAll();
+        for (string s : cfmMap.keySet()){
+            string RDFieldName = cfmMap.get(s).Recurring_Donation_Field__c;             
+            if (!existingFields.contains(RDFieldName.toLowerCase()) && s != 'id'){
+                queryRCD = queryRCD + ',' + cfmMap.get(s).Recurring_Donation_Field__c;
+                existingFields.add(RDFieldName.toLowerCase());   
+            }
+        }        
+       
+        //if in multicurrency org currencyiso field exists, add it to query for use later
+        if(isMultiCurrency()){
+            queryRCD = queryRCD + ',CurrencyIsoCode';
+        	RDCurrencyField = Schema.sObjectType.Recurring_Donation__c.fields.getMap().get('CurrencyIsoCode');
+        }
+       
+        queryRCD=queryRCD+' from Recurring_Donation__c where Id in :RDids and Open_Ended_Status__c = :openLabel';
+       
+        //execute query
+        Recurring_Donation__c[] updatedRecurringDonations = Database.query(queryRCD);
+            
+        for (Recurring_Donation__c rd : updatedRecurringDonations){
+            rdMap.put(rd.id, rd);            
+        }        
         
         //get the cumulative values to update the recurring donations
         list<sobject> sobjs = [select count(id) oppcount, MIN(CloseDate) MinDate, MAX(CloseDate) MaxDate, SUM(Amount) Total,
@@ -192,8 +254,19 @@ global with sharing class RecurringDonations {
             //which is evaluated as false, so we'll need to mark 
             //this rdid as having had the nonsummary false isclosed value 
             //already used, so we don't accidentally use the summary row below
-            boolean isClosed = (boolean)obj.get('isClosed');
-            boolean isWon = (boolean)obj.get('isWon');            
+            /*boolean isClosed = (boolean)obj.get('isClosed');
+            boolean isWon = (boolean)obj.get('isWon');*/            
+            
+            boolean isClosed;
+            boolean isWon;
+            if ((boolean)obj.get('isClosed') != null)
+                isClosed = (boolean)obj.get('isClosed');
+            else
+                isClosed = false;
+            if ((boolean)obj.get('isWon') != null)
+                isWon = (boolean)obj.get('isWon');
+            else
+                isWon = false;
             
             if (rdid != null){
             	//if we already have values for this RD, get it from our rdid map, otherwise just grab
@@ -214,7 +287,10 @@ global with sharing class RecurringDonations {
                 //if this is the closed set     
                 else if (isClosed && isWon){
                     rd.Last_Payment_Date__c = (date)obj.get('MaxDate');
-                    rd.Paid_Amount__c = (decimal)obj.get('Total');     
+                    if(isMultiCurrency())
+                    	rd.Paid_Amount__c = convertFromCorporate((string)rd.get(RDCurrencyField), (decimal)obj.get('Total'));    
+                    else
+                    	rd.Paid_Amount__c = (decimal)obj.get('Total');     
                     rd.Total_Paid_Installments__c = (integer)obj.get('oppcount');
                     updateMap.put(rdid, rd);                        
                 }                   
@@ -234,13 +310,36 @@ global with sharing class RecurringDonations {
     @future
     public static void insertOppsOnRecurringDonationInsertFuture(set<id> recids){
     	delete [select id from Opportunity where isClosed = false and Recurring_Donation__r.id IN :recids];
-    	list<Recurring_Donation__c> reclist = [select id, Total__c, Total_Paid_Installments__c, Schedule_Type__c,
-    	                                       Recurring_Donation_Campaign__c, Paid_Amount__c, Organization__c,
-    	                                       Open_Ended_Status__c, Next_Payment_Date__c, Last_Payment_Date__c,
-    	                                       Installments__c, Installment_Period__c, Installment_Amount__c,
-    	                                       Donor_Name__c, Date_Established__c, Contact__c, Amount__c, Name, OwnerId  	                                       
-    	                                       from Recurring_Donation__c];
     	
+    	 //Get the open label for opps
+        string openLabel = system.label.RecurringDonationOpenStatus;
+              
+        String queryRCD = 'select id';
+        for (string s : existingFields){
+            queryRCD += ', ' + s;               
+        }
+       
+        //add any custom mapping to make sure we have the required fields
+        map<string, Custom_Field_Mapping__c> cfmMap = new map<string, Custom_Field_Mapping__c>();
+        cfmMap = Custom_Field_Mapping__c.getAll();
+        for (string s : cfmMap.keySet()){
+            string RDFieldName = cfmMap.get(s).Recurring_Donation_Field__c;             
+            if (!existingFields.contains(RDFieldName.toLowerCase()) && s != 'id'){
+                queryRCD = queryRCD + ',' + cfmMap.get(s).Recurring_Donation_Field__c;
+                existingFields.add(RDFieldName.toLowerCase());   
+            }
+        }       
+       
+        //if UserInfo.isMultiCurrencyOrganization() add currencyiso field to query for use later
+        if(UserInfo.isMultiCurrencyOrganization()){
+            queryRCD = queryRCD + ',CurrencyIsoCode';
+        }
+       
+        queryRCD=queryRCD+' from Recurring_Donation__c where Id in :recids';
+       
+        //execute query
+        Recurring_Donation__c[] reclist = Database.query(queryRCD);
+         
         insertOppsOnRecurringDonationInsert(reclist);
     }
     
@@ -252,9 +351,14 @@ global with sharing class RecurringDonations {
         Recurring_Donations_Settings__c rds = getRecurringDonationsSettings();
         customFieldMappingSettings = Custom_Field_Mapping__c.getAll();
         
-        // James Melville 05/03/2011 Added to support multi-currency sfdc.  */
-        // CurrencyIsoCode doesn't exist in non-multi-currency orgs
-        SObjectField OppCurrencyField = Schema.sObjectType.Opportunity.fields.getMap().get('CurrencyIsoCode');
+        SObjectField OppCurrencyField;
+        SObjectField RDCurrencyField;
+        
+        if(UserInfo.isMultiCurrencyOrganization()){
+        	OppCurrencyField = Schema.sObjectType.Opportunity.fields.getMap().get('CurrencyIsoCode');
+        	RDCurrencyField = Schema.sObjectType.Recurring_Donation__c.fields.getMap().get('CurrencyIsoCode');
+        }
+        
         //grab the contact id for role to take advantage of NPSP C&O if it exists
         Sobjectfield ConIDForRole = Schema.sObjectType.Opportunity.fields.getMap().get('npe01__Contact_Id_for_Role__c');
         set<id> updateRecurringDonationSet = new set<id>();            
@@ -271,7 +375,7 @@ global with sharing class RecurringDonations {
         }
 
         //Create a Map of Contact Ids and Contact Records
-        map<Id,Contact> contactMap;
+        map<Id,Contact> contactMap = new map<id, Contact>();
         map<Id,Account> accountMap;
         if (contactIds.size() > 0){
             contactMap = new Map<Id,Contact>([Select Id, AccountId from Contact where Id in :contactIds and AccountId != null]);
@@ -280,10 +384,15 @@ global with sharing class RecurringDonations {
         //Loop through the Recurring Donations and create the appropriate number of Opportunities
         for(Recurring_Donation__c r : recurringDonations){
             //if we're not looking at an open-ended type donation, handle it the 'old' way        
+            date OppCloseDate;
             if (r.Open_Ended_Status__c != system.label.RecurringDonationOpenStatus && r.Open_Ended_Status__c != system.label.RecurringDonationClosedStatus){          
         
                 Decimal installs = r.Installments__c;
-                Integer installments = installs.intValue();
+                Integer installments = 0;
+                if (installs != null)
+                    installments = installs.intValue();
+                
+                OppCloseDate = r.Date_Established__c;
                 
                 for ( Integer j=0;j<installments;j++ )
                 {
@@ -300,18 +409,10 @@ global with sharing class RecurringDonations {
                         opp.AccountId = c.AccountId;
                     } 
 
-                    // James Melville 05/03/2011 Added to support multi-currency sfdc.  
-                    // we check currency iscode before entering the loop since it's a system check
-                    if(OppCurrencyField != null)
-                    {
-                        SObjectField RDCurrencyField = Schema.sObjectType.Recurring_Donation__c.fields.getMap().get('CurrencyIsoCode');
-                        //this should never return null as we have already found multicurrency on the oppty.
-                        if(RDCurrencyField != null)
-                        {
-                            //set the donation currency field to equal the recurring donation currency
-                            opp.put(OppCurrencyField,r.get(RDCurrencyField));
-                        }
-                    }
+                    // map currency from recurring donation to oppty
+                    if(UserInfo.isMultiCurrencyOrganization()){
+                        opp.put(OppCurrencyField,r.get(RDCurrencyField));
+        			}
                 
                     //add the remainder to the last installment, otherwise use the amount
                     if (j + 1 == installments && installments * r.Installment_Amount__c != r.Total__c)
@@ -320,7 +421,7 @@ global with sharing class RecurringDonations {
                     } else {
                         opp.Amount = r.Installment_Amount__c;
                     }
-                
+                /*
                     if (r.Installment_Period__c == System.Label.RecurringDonationInstallmentPeriodYearly)
                     {
                         opp.CloseDate = (r.Date_Established__c).addYears(j);
@@ -340,6 +441,9 @@ global with sharing class RecurringDonations {
                     {
                        opp.CloseDate = (r.Date_Established__c);
                     }
+                */
+                    opp.CloseDate = OppCloseDate;                    
+                    OppCloseDate = getNextDate(OppCloseDate, r.Installment_Period__c);                
                 
                     String oName = '';
                     oName += r.Donor_Name__c; 
@@ -383,13 +487,8 @@ global with sharing class RecurringDonations {
                 //if its not 'open', we're not doing anything to it
                 if (r.Open_Ended_Status__c == system.label.RecurringDonationOpenStatus){
                     //get settings so we can figure out how many donations to create                    
-                    date OppCloseDate;
+                    
                     date loop_date;
-                  
-                    SObjectField RDCurrencyField; 
-                    if(OppCurrencyField != null){
-                        RDCurrencyField = Schema.sObjectType.Recurring_Donation__c.fields.getMap().get('CurrencyIsoCode');
-                    }
                     
                     if (r.Next_Payment_Date__c != null)                     
                         OppCloseDate = r.Next_Payment_Date__c;
@@ -409,7 +508,7 @@ global with sharing class RecurringDonations {
                         Opportunity o = new Opportunity();
                         o.CloseDate = OppCloseDate;
                                                                                                           
-                        if(RDCurrencyField != null){
+                    	if(UserInfo.isMultiCurrencyOrganization()){
                             //set the donation currency field to equal the recurring donation currency
                             o.put(OppCurrencyField,r.get(RDCurrencyField));
                         }
@@ -565,16 +664,37 @@ global with sharing class RecurringDonations {
         
         Recurring_Donations_Settings__c rds = getRecurringDonationsSettings();
         string openLabel = system.label.RecurringDonationOpenStatus;
-        map<id, Recurring_Donation__c> rdMap = new map<id, Recurring_Donation__c>([select id, Paid_Amount__c, Next_Payment_Date__c, 
-                                                                                    Contact__c, Organization__c, Amount__c, 
-                                                                                    Date_Established__c, Recurring_Donation_Campaign__c,
-                                                                                     Installment_Period__c, Installments__c,
-                                                                                     Last_Payment_Date__c, Open_Ended_Status__c,
-                                                                                     Schedule_Type__c, Total_Paid_Installments__c,
-                                                                                     Donor_Name__c, OwnerId
-                                                                                  from Recurring_Donation__c 
-                                                                                  where Open_Ended_Status__c = :openLabel 
-                                                                                  and id IN :recIDs]);        
+        map<id, Recurring_Donation__c> rdMap = new map<id, Recurring_Donation__c>();
+              
+        String queryRCD = 'select id';
+        for (string s : existingFields){
+            queryRCD += ', ' + s;               
+        }
+       
+        //add any custom mapping to make sure we have the required fields
+        map<string, Custom_Field_Mapping__c> cfmMap = new map<string, Custom_Field_Mapping__c>();
+        cfmMap = Custom_Field_Mapping__c.getAll();
+        for (string s : cfmMap.keySet()){
+            string RDFieldName = cfmMap.get(s).Recurring_Donation_Field__c;             
+            if (!existingFields.contains(RDFieldName.toLowerCase()) && s != 'id'){
+                queryRCD = queryRCD + ',' + cfmMap.get(s).Recurring_Donation_Field__c;
+                existingFields.add(RDFieldName.toLowerCase());   
+            }
+        }       
+       
+        //if UserInfo.isMultiCurrencyOrganization() is true, currencyiso field exists add it to query for use later
+        if(UserInfo.isMultiCurrencyOrganization()){
+            queryRCD = queryRCD + ',CurrencyIsoCode';
+        }
+       
+        queryRCD=queryRCD+' from Recurring_Donation__c where Id in :recIDs and Open_Ended_Status__c = :openLabel';
+       
+        //execute query
+        Recurring_Donation__c[] updatedRecurringDonations = Database.query(queryRCD);
+            
+        for (Recurring_Donation__c rd : updatedRecurringDonations){
+            rdMap.put(rd.id, rd);            
+        }                                                                                 
                            
         list<Opportunity> oppList = [select id, Amount, Name, CampaignId, AccountID, CloseDate, Recurring_Donation__r.id                                         
                                        from Opportunity 
@@ -627,7 +747,8 @@ global with sharing class RecurringDonations {
                 oName += ' ';
                 oName += System.Label.RecurringDonationPrefix;
                 oName += ' ' + iNumber + ' ';
-                oName += o.CloseDate.format();
+                if (o.CloseDate != null)
+                    oName += o.CloseDate.format();
                 o.Name = oName;
                 o.OwnerId = rdMap.get(RDid).OwnerId; 
                 
@@ -743,14 +864,19 @@ global with sharing class RecurringDonations {
     	
         //get the total number of forecast months
         integer forecast_months = (integer)rds.Opportunity_Forecast_Months__c;
-        SObjectField RDCurrencyField; 
+        
         // multicurrency support
-        SObjectField OppCurrencyField = Schema.sObjectType.Opportunity.fields.getMap().get('CurrencyIsoCode');
+        SObjectField OppCurrencyField;
+        SObjectField RDCurrencyField;
+        
+        if(UserInfo.isMultiCurrencyOrganization()){
+        	OppCurrencyField = Schema.sObjectType.Opportunity.fields.getMap().get('CurrencyIsoCode');
+        	RDCurrencyField = Schema.sObjectType.Recurring_Donation__c.fields.getMap().get('CurrencyIsoCode');
+        }
+        
         //grab the contact id for role to take advantage of NPSP C&O if it exists
         Sobjectfield ConIDForRole = Schema.sObjectType.Opportunity.fields.getMap().get('npe01__Contact_Id_for_Role__c');
-        if(OppCurrencyField != null){
-            RDCurrencyField = Schema.sObjectType.Recurring_Donation__c.fields.getMap().get('CurrencyIsoCode');
-        }
+        
         string openlabel = system.label.RecurringDonationOpenStatus;
         
         //get the existing donations
@@ -799,7 +925,9 @@ global with sharing class RecurringDonations {
                     Opportunity o = new Opportunity();
 
                     //multicurrency?
-                    if(RDCurrencyField != null){o.put(OppCurrencyField,rd.get(RDCurrencyField));}
+                    if(UserInfo.isMultiCurrencyOrganization()){
+                    	o.put(OppCurrencyField,rd.get(RDCurrencyField));
+                    }
                
                     //account or contact?
                     if (rd.Organization__c != null){
