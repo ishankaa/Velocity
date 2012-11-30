@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomObjectTranslation xmlns="http://soap.sforce.com/2006/04/metadata">
+    <caseValues>
+        <plural>false</plural>
+        <value>Relationship Settings</value>
+    </caseValues>
+    <caseValues>
+        <plural>true</plural>
+        <value>Relationship Settings</value>
+    </caseValues>
+    <fields>
+        <help><!-- Auto-created Relationships are auto-deduplicated to prevent duplicate Relationship records from being created between two Contacts.  Check this box to disable this behavior &amp; allow multiple Relationships of the same Type to be created between two Contacts --></help>
+        <label><!-- Allow Auto-Created Duplicates --></label>
+        <name>Allow_AutoCreated_Duplicates__c</name>
+    </fields>
+    <fields>
+        <help><!-- DISABLES the RelationshipCampaignMembers.trigger (CampaignMember, after insert, after update) 
+- checking this box will disable a trigger. This can cause erratic and unpredictable behavior in your NPSP. FOR ADVANCED CONSULTANTS AND DEVELOPERS ONLY. --></help>
+        <label><!-- DISABLE_RelationshipCM_trigger --></label>
+        <name>DISABLE_RelationshipCM_trigger__c</name>
+    </fields>
+    <fields>
+        <help><!-- DISABLES the RelationshipContacts.trigger (Contact, after delete)
+- checking this box will disable a trigger.  This can cause erratic and unpredictable behavior in your NPSP.  FOR ADVANCED CONSULTANT AND DEVELOPERS ONLY. --></help>
+        <label><!-- DISABLE_RelationshipContacts_trigger --></label>
+        <name>DISABLE_RelationshipContacts_trigger__c</name>
+    </fields>
+    <fields>
+        <help><!-- DISABLES the Relationships.trigger (Relationship__c, before insert, before update, before delete, after insert, after update, after delete, after undelete)
+- checking this box will disable a trigger. This can cause erratic and unpredictable behavior in y --></help>
+        <label><!-- DISABLE_Relationships_trigger --></label>
+        <name>DISABLE_Relationships_trigger__c</name>
+    </fields>
+    <fields>
+        <help><!-- Forces the Relationships package to synchronously process the auto creation of relationships for auto-create functionality --></help>
+        <label><!-- Force Synchronous Auto Create --></label>
+        <name>Force_Synchronous_Auto_Create__c</name>
+    </fields>
+    <fields>
+        <help><!-- The custom field used to define the gender of a Contact for determining reciprocal relationships --></help>
+        <label><!-- Gender Field --></label>
+        <name>Gender_Field__c</name>
+    </fields>
+    <fields>
+        <help><!-- Determines method used to generate the reciprocal relationship.  Either List Setting which uses custom settings by gender (see Reciprocal Relationships tab), or Value Inversion, which inverts the type if appropriate (&quot;Parent-Child&quot; to &quot;Child-Parent&quot;) --></help>
+        <label><!-- Reciprocal Method --></label>
+        <name>Reciprocal_Method__c</name>
+    </fields>
+    <startsWith>Consonant</startsWith>
+</CustomObjectTranslation>

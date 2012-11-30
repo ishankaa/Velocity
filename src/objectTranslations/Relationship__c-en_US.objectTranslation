@@ -28,6 +28,15 @@
         <relationshipLabel><!-- Hidden Relationships List --></relationshipLabel>
     </fields>
     <fields>
+        <help><!-- Text formula that constructs a sentence explaining the relationship between two individuals --></help>
+        <label><!-- Relationship Explanation --></label>
+        <name>Relationship_Explanation__c</name>
+    </fields>
+    <fields>
+        <label><!-- _SYSTEM: SystemCreated --></label>
+        <name>SYSTEM_SystemCreated__c</name>
+    </fields>
+    <fields>
         <label><!-- Status --></label>
         <name>Status__c</name>
         <picklistValues>
@@ -51,12 +60,32 @@
             <translation><!-- Coworker --></translation>
         </picklistValues>
         <picklistValues>
+            <masterLabel>Daughter</masterLabel>
+            <translation><!-- Daughter --></translation>
+        </picklistValues>
+        <picklistValues>
             <masterLabel>Family</masterLabel>
             <translation><!-- Family --></translation>
         </picklistValues>
         <picklistValues>
+            <masterLabel>Father</masterLabel>
+            <translation><!-- Father --></translation>
+        </picklistValues>
+        <picklistValues>
             <masterLabel>Friend</masterLabel>
             <translation><!-- Friend --></translation>
+        </picklistValues>
+        <picklistValues>
+            <masterLabel>Niece</masterLabel>
+            <translation><!-- Niece --></translation>
+        </picklistValues>
+        <picklistValues>
+            <masterLabel>Son</masterLabel>
+            <translation><!-- Son --></translation>
+        </picklistValues>
+        <picklistValues>
+            <masterLabel>Wife</masterLabel>
+            <translation><!-- Wife --></translation>
         </picklistValues>
     </fields>
     <startsWith>Consonant</startsWith>

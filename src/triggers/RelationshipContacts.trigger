@@ -1,5 +1,5 @@
 /*
-	Copyright (c) 2009, Salesforce.com Foundation
+	Copyright (c) 2009,2012, Salesforce.com Foundation
 	All rights reserved.
 	
 	Redistribution and use in source and binary forms, with or without
@@ -27,11 +27,16 @@
 	ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 	POSSIBILITY OF SUCH DAMAGE.
 */
-trigger RelationshipContacts on Contact (after delete) {
-
-	public enum triggerAction {beforeInsert, beforeUpdate, beforeDelete, afterInsert, afterUpdate, afterDelete, afterUndelete}
-
-    if( Trigger.isAfter && Trigger.isDelete ){
-        Relationships.deleteEmptyRelationships();
+trigger RelationshipContacts on Contact (after delete, after insert, after update) {
+    if(!Relationships_Utils.getRelationshipSettings().DISABLE_RelationshipContacts_trigger__c){
+        if (Relationships_Utils.hasContactAutoCreate && trigger.isAfter && trigger.isInsert){
+            Relationships process = new Relationships(trigger.newMap, null, Relationships_Utils.triggerAction.afterInsert);            
+        }
+        else if (Relationships_Utils.hasContactAutoCreate && trigger.isAfter && trigger.isUpdate){
+            Relationships process = new Relationships(trigger.newMap, trigger.oldMap, Relationships_Utils.triggerAction.afterUpdate);
+        }        
+        else if (trigger.isAfter && trigger.isDelete){
+            Relationships.deleteEmptyRelationships();	
+        }
     }
 }

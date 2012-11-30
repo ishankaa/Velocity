@@ -67,6 +67,14 @@
         <value>Already In Household</value>
     </labels>
     <labels>
+        <fullName>AutoCreateFieldError</fullName>
+        <categories>Relationships</categories>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>AutoCreateFieldError</shortDescription>
+        <value>Unable to retrieve a valid Id for Relationship auto-creation.  Please check the settings under the Relationships Settings tab for valid fields and try again.</value>
+    </labels>
+    <labels>
         <fullName>AutoFormalGreeting</fullName>
         <language>en_US</language>
         <protected>false</protected>
@@ -93,6 +101,14 @@
         <protected>true</protected>
         <shortDescription>Automatic Affiliation Help Text</shortDescription>
         <value>Check this box to have Contacts receive automatic affiliations when they are created with a relationship to an Account.</value>
+    </labels>
+    <labels>
+        <fullName>Automatic_Relationship_Help_Text</fullName>
+        <categories>Relationships</categories>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Automatic Relationship Help Text</shortDescription>
+        <value>Defines the way a relationship type, and its reciprocal, is displayed.</value>
     </labels>
     <labels>
         <fullName>Change</fullName>
@@ -336,6 +352,14 @@
         <value>Existing Household</value>
     </labels>
     <labels>
+        <fullName>Female</fullName>
+        <categories>Relationships</categories>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Female</shortDescription>
+        <value>Female</value>
+    </labels>
+    <labels>
         <fullName>FindContactByName</fullName>
         <language>en_US</language>
         <protected>false</protected>
@@ -429,6 +453,22 @@
         <protected>true</protected>
         <shortDescription>Household Rules Help Text</shortDescription>
         <value>Select which Contacts get Households: All, only those related to an Individual Account, or none.</value>
+    </labels>
+    <labels>
+        <fullName>List_Setting_Help_Text</fullName>
+        <categories>Relationships</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>List Setting Help Text</shortDescription>
+        <value>List Settings: Appends the reciprocal relationship based on the gender from the suffix and gender fields on the contact.  You can define the relationships in the custom settings section titled &quot;custom relationship settings&quot; label.</value>
+    </labels>
+    <labels>
+        <fullName>Male</fullName>
+        <categories>Relationships</categories>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Male</shortDescription>
+        <value>Male</value>
     </labels>
     <labels>
         <fullName>ManageHousehold</fullName>
@@ -718,6 +758,66 @@
         <value>You must specify fewer than 50 installments</value>
     </labels>
     <labels>
+        <fullName>Relationship_Explanation_Connector</fullName>
+        <categories>Relationships</categories>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Relationship Explanation Connector</shortDescription>
+        <value>is</value>
+    </labels>
+    <labels>
+        <fullName>Relationship_Split</fullName>
+        <categories>Relationships</categories>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Relationship Split</shortDescription>
+        <value>-</value>
+    </labels>
+    <labels>
+        <fullName>RelationshipsAutoDescription</fullName>
+        <categories>Relationships</categories>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>RelationshipsAutoDescription</shortDescription>
+        <value>Auto relationships allow you to identify your own custom lookup fields on the Contact or Campaign Member objects that trigger the creation of a new Relationship type of your choice. For example, a &apos;Referral&apos; lookup from Campaign Member to Contact could create a &apos;Referrer&apos; and &apos;Referee&apos; Relationships between the two Contacts. 
+
+Note that this feature is not available for Leads or Campaign Member objects that reference Leads.</value>
+    </labels>
+    <labels>
+        <fullName>RelationshipsCustomFieldOverload</fullName>
+        <categories>Relationships</categories>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>RelationshipsCustomFieldOverload</shortDescription>
+        <value>FieldsDescribes Limit has been exceeded, may not be able to show all available fields.  
+
+There are more than 100 custom fields defined on the Contact or Campaign Member object. If the field you wish to use is not shown, you may need to enter this Auto-Create record manually.  Go to Setup-&gt;Develop-&gt;Custom Settings and click &apos;Manage&apos; next to &apos;Relationship Auto-Create&apos;, then click &apos;New&apos; to enter a new record manually.  Use API names (not the field label) to identify the fields that should trigger a new Relationship record.</value>
+    </labels>
+    <labels>
+        <fullName>RelationshipsErrorsDescription</fullName>
+        <categories>Relationships</categories>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>RelationshipsErrorsDescription</shortDescription>
+        <value>Errors can occur during the normal operation of your Relationships Package.  They can be caused by things such as improperly constructed validation rules, required fields, security/permissions, and other reasons.  This tab provides information about errors that may have occurred, when, and why they occurred.</value>
+    </labels>
+    <labels>
+        <fullName>RelationshipsLookupDescription</fullName>
+        <categories>Relationships</categories>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>RelationshipsLookupDescription</shortDescription>
+        <value>These settings allow you to configure reciprocal relationships, or the &quot;matching&quot; relationship between two Contacts. For example, if a father is related to his son, the son should likewise be related back to the father.  You can specify the Type value for the Name, and then what the reciprocal value should be based on the gender of the connecting Contact. You can define a male reciprocal, a female reciprocal and a neutral reciprocal to be used if gender is unable to be determined.  Gender determinations are based on salutation if possible, or a custom gender field you can define on the &apos;General Settings&apos; tab.</value>
+    </labels>
+    <labels>
+        <fullName>RelationshipsSettingsDescription</fullName>
+        <categories>Relationships</categories>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>RelationshipsSettingsDescription</shortDescription>
+        <value>Settings that control the behavior of the Relationships package. Changing these will change how the Relationships records behave.</value>
+    </labels>
+    <labels>
         <fullName>RollupErrorMessage</fullName>
         <categories>Households</categories>
         <language>en_US</language>
@@ -748,5 +848,15 @@
         <value>Settings that control user defined rollups from the Opportunity/Donation to a Contact, Account or Household. Changing these will change how your Nonprofit Starter Pack behaves.
 
 WARNING: Misconfigured Settings may cause your rollups to fail. Please test your user-defined rollups thoroughly before deploying to production.</value>
+    </labels>
+    <labels>
+        <fullName>Value_Inversion_Help_Text</fullName>
+        <categories>Relationships</categories>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Value Inversion Help Text</shortDescription>
+        <value>Value Inversion:
+
+Uses a hyphenated option as the type and inverts the selection on the reciprocal.</value>
     </labels>
 </CustomLabels>
