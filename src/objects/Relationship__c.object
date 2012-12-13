@@ -40,7 +40,9 @@
     <enableReports>true</enableReports>
     <fields>
         <fullName>Contact__c</fullName>
+        <description>Related Contact is this Contact&apos;s ______.</description>
         <externalId>false</externalId>
+        <inlineHelpText>Related Contact is this Contact&apos;s ______.</inlineHelpText>
         <label>Contact</label>
         <referenceTo>Contact</referenceTo>
         <relationshipLabel>Relationships</relationshipLabel>
@@ -52,7 +54,9 @@
     </fields>
     <fields>
         <fullName>Description__c</fullName>
+        <description>Additional information about this Relationship</description>
         <externalId>false</externalId>
+        <inlineHelpText>Additional information about this Relationship</inlineHelpText>
         <label>Description</label>
         <length>32000</length>
         <trackHistory>false</trackHistory>
@@ -62,7 +66,9 @@
     <fields>
         <fullName>ReciprocalRelationship__c</fullName>
         <deleteConstraint>SetNull</deleteConstraint>
+        <description>System field that links to the two sides of the Relationship together.  This field should not be modified directly.  The Reciprocal Relationship will have the opposite type, if available, of this Relationship.</description>
         <externalId>false</externalId>
+        <inlineHelpText>System field that links to the two sides of the Relationship together.  This field should not be modified directly.  The Reciprocal Relationship will have the opposite type, if available, of this Relationship.</inlineHelpText>
         <label>Reciprocal Relationship</label>
         <referenceTo>Relationship__c</referenceTo>
         <relationshipLabel>Relationships</relationshipLabel>
@@ -85,13 +91,13 @@
     </fields>
     <fields>
         <fullName>Relationship_Explanation__c</fullName>
-        <description>Text formula that constructs a sentence explaining the relationship between two individuals</description>
+        <description>Text formula that constructs a sentence explaining the relationship between the two Contacts</description>
         <externalId>false</externalId>
         <formula>TEXT(RelatedContact__r.Salutation) + &quot; &quot; + RelatedContact__r.FirstName + &quot; &quot; + RelatedContact__r.LastName
 + &quot;  &quot;  +  $Label.Relationship_Explanation_Connector + &quot; &quot; + 
 TEXT(Contact__r.Salutation) + &quot; &quot; + Contact__r.FirstName + &quot; &quot; + Contact__r.LastName + &quot;&apos;s &quot; + TEXT(Type__c)</formula>
         <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
-        <inlineHelpText>Text formula that constructs a sentence explaining the relationship between two individuals</inlineHelpText>
+        <inlineHelpText>Text formula that constructs a sentence explaining the relationship between the two Contacts</inlineHelpText>
         <label>Relationship Explanation</label>
         <required>false</required>
         <trackHistory>false</trackHistory>
@@ -101,14 +107,18 @@ TEXT(Contact__r.Salutation) + &quot; &quot; + Contact__r.FirstName + &quot; &quo
     <fields>
         <fullName>SYSTEM_SystemCreated__c</fullName>
         <defaultValue>false</defaultValue>
+        <description>System field that indicates if this Relationship was created automatically as the reciprocal to another Relationships.</description>
         <externalId>false</externalId>
+        <inlineHelpText>System field that indicates if this Relationship was created automatically as the reciprocal to another Relationships.</inlineHelpText>
         <label>_SYSTEM: SystemCreated</label>
         <trackHistory>false</trackHistory>
         <type>Checkbox</type>
     </fields>
     <fields>
         <fullName>Status__c</fullName>
+        <description>Status of the Relationship.</description>
         <externalId>false</externalId>
+        <inlineHelpText>Status of the Relationship.</inlineHelpText>
         <label>Status</label>
         <picklist>
             <picklistValues>
@@ -126,7 +136,9 @@ TEXT(Contact__r.Salutation) + &quot; &quot; + Contact__r.FirstName + &quot; &quo
     </fields>
     <fields>
         <fullName>Type__c</fullName>
+        <description>Field that describes how the Related Contact is connected to the Contact.</description>
         <externalId>false</externalId>
+        <inlineHelpText>Field that describes how the Related Contact is connected to the Contact.</inlineHelpText>
         <label>Type</label>
         <picklist>
             <picklistValues>
@@ -142,19 +154,15 @@ TEXT(Contact__r.Salutation) + &quot; &quot; + Contact__r.FirstName + &quot; &quo
                 <default>false</default>
             </picklistValues>
             <picklistValues>
-                <fullName>Acquaintance</fullName>
-                <default>false</default>
-            </picklistValues>
-            <picklistValues>
                 <fullName>Father</fullName>
                 <default>false</default>
             </picklistValues>
             <picklistValues>
-                <fullName>Niece</fullName>
+                <fullName>Mother</fullName>
                 <default>false</default>
             </picklistValues>
             <picklistValues>
-                <fullName>Wife</fullName>
+                <fullName>Parent</fullName>
                 <default>false</default>
             </picklistValues>
             <picklistValues>
@@ -163,6 +171,74 @@ TEXT(Contact__r.Salutation) + &quot; &quot; + Contact__r.FirstName + &quot; &quo
             </picklistValues>
             <picklistValues>
                 <fullName>Daughter</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Child</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Aunt</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Uncle</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Husband</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Wife</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Partner</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Cousin</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Grandmother</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Grandfather</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Grandparent</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Grandson</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Granddaughter</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Grandchild</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Employer</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Employee</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Acquaintance</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Niece</fullName>
                 <default>false</default>
             </picklistValues>
             <sorted>false</sorted>

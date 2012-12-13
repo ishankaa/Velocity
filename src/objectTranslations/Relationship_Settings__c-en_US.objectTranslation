@@ -46,5 +46,15 @@
         <label><!-- Reciprocal Method --></label>
         <name>Reciprocal_Method__c</name>
     </fields>
+    <fields>
+        <help><!-- Populating this value will allow the field to pre-populate when creating new Relationships from the Relationship Viewer (see description for more information) --></help>
+        <label><!-- Relationship Name Field Id --></label>
+        <name>Relationship_Name_Field_Id__c</name>
+    </fields>
+    <fields>
+        <help><!-- Populating this value will allow the field to pre-populate when creating new Relationships from the Relationship Viewer (see description for more information) --></help>
+        <label><!-- Relationship Name Id Field Id --></label>
+        <name>Relationship_Name_Id_Field_Id__c</name>
+    </fields>
     <startsWith>Consonant</startsWith>
 </CustomObjectTranslation>

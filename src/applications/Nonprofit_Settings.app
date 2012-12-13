@@ -7,9 +7,7 @@
     <tab>Households_Settings</tab>
     <tab>Affiliations_Settings</tab>
     <tab>Opportunity_Rollups</tab>
-    <tab>User_Rollups</tab>
+    <tab>Relationships_Settings</tab>
     <tab>Recurring_Donations_Settings</tab>
-    <tab>Payment_Mapping</tab>
-    <tab>Contact_Merge</tab>
     <tab>About_Nonprofit_Edition</tab>
 </CustomApplication>

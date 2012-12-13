@@ -19,6 +19,11 @@
         <name>Error_Record_Link__c</name>
     </fields>
     <fields>
+        <help><!-- Stack trace for the thrown error, if available at run time. --></help>
+        <label><!-- Error Stack Trace --></label>
+        <name>Error_Stack_Trace__c</name>
+    </fields>
+    <fields>
         <help><!-- Type of error that occurred --></help>
         <label><!-- Error Type --></label>
         <name>Error_Type__c</name>
