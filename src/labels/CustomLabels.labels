@@ -845,7 +845,7 @@ There are more than 100 custom fields defined on the Contact or Campaign Member 
         <language>en_US</language>
         <protected>false</protected>
         <shortDescription>UDRDescription</shortDescription>
-        <value>Settings that control user defined rollups from the Opportunity/Donation to a Contact, Account or Household. Changing these will change how your Nonprofit Starter Pack behaves.
+        <value>Settings that control user defined rollups from the Opportunity/Donation to a Contact, Account or Household. Changing these will change how your Velocity Piuymi behaves.
 
 WARNING: Misconfigured Settings may cause your rollups to fail. Please test your user-defined rollups thoroughly before deploying to production.</value>
     </labels>
