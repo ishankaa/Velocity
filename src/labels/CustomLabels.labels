@@ -271,7 +271,7 @@
         <language>en_US</language>
         <protected>true</protected>
         <shortDescription>Contacts Settings Account Model Help Text</shortDescription>
-        <value>The Account Model for the Nonprofit Starter Pack determines if each Contact has it&apos;s own &quot;One-to-One&quot; Account or if they all are related to a single &quot;Individual&quot; Account. This should be set at the begining of use and not changed unless you fully understand the changes. If you change your Account model when you have real data, you&apos;ll need to migrate that data to the new model.</value>
+        <value>The Account Model for the Velocity determines if each Contact has it&apos;s own &quot;One-to-One&quot; Account or if they all are related to a single &quot;Individual&quot; Account. This should be set at the begining of use and not changed unless you fully understand the changes. If you change your Account model when you have real data, you&apos;ll need to migrate that data to the new model.</value>
     </labels>
     <labels>
         <fullName>Contacts_Settings_Contact_Roles_Help_Text</fullName>
